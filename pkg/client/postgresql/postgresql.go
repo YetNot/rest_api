@@ -25,7 +25,7 @@ type Client interface {
 func NewClient(ctx context.Context, maxAttempts int, sc config.StorageConfig) (*pgxpool.Pool, error) {
 	var pool *pgxpool.Pool
 	var err error
-	dsn := fmt.Sprintf("postgreql://%s:%s@%s:%s/%s", sc.Username, sc.Password, sc.Host, sc.Port, sc.Database)
+	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", sc.Username, sc.Password, sc.Host, sc.Port, sc.Database)
 	err = utils.DoWithTries(func() error {
 		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()

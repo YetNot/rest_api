@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	author2 "rest_api/internal/author"
 	author "rest_api/internal/author/db"
 	"rest_api/internal/config"
 	"rest_api/internal/user"
@@ -25,19 +26,27 @@ func main() {
 
 	cfg := config.GetConfig()
 
-	postrgeSQLClient, err := postgresql.NewClient(context.TODO(), 5, cfg.Storage)
+	postrgeSQLClient, err := postgresql.NewClient(context.TODO(), 3, cfg.Storage)
 	if err != nil {
-		logger.Fatal("%v", err)
+		logger.Fatalf("%v", err)
 	}
 	repository := author.NewRepository(postrgeSQLClient, logger)
 
+	newAth := author2.Author{
+		Name: "Mir",
+	}
+	if err = repository.Create(context.TODO(), &newAth); err != nil {
+		logger.Fatalf("%v", err)
+	}
+	logger.Infof("%v", newAth)
+
 	all, err := repository.FindAll(context.TODO())
 	if err != nil {
-		logger.Fatal("%v", err)
+		logger.Fatalf("%v", err)
 	}
 
 	for _, ath := range all {
-		logger.Info("%v", ath)
+		logger.Infof("%v", ath)
 	}
 
 	// cfgMongo := cfg.MongoDB

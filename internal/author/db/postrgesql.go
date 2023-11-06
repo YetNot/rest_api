@@ -17,15 +17,14 @@ type repository struct {
 }
 
 func formatQuery(q string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(q, "/t", ""), "\n", " ")
+	return strings.ReplaceAll(strings.ReplaceAll(q, "\t", ""), "\n", " ")
 }
 
 func (r *repository) Create(ctx context.Context, author *author.Author) error {
-	q := `
-		INSERT INTO author (name) 
-		VALUES ($1) 
-		RETURNING id
-	`
+	q := `INSERT INTO author (name) 
+	 		VALUES ($1) 
+	 		RETURNING id
+	 `
 
 	r.logger.Trace(fmt.Sprintf("SQL Query: %s", formatQuery(q)))
 	if err := r.client.QueryRow(ctx, q, author.Name).Scan(&author.ID); err != nil {
@@ -42,7 +41,7 @@ func (r *repository) Create(ctx context.Context, author *author.Author) error {
 func (r *repository) FindOne(ctx context.Context, id string) (author.Author, error) {
 	q := `
 	SELECT id, name
-	FROM public.author
+	FROM author
 	WHERE id = $1
 `
 
@@ -57,10 +56,10 @@ func (r *repository) FindOne(ctx context.Context, id string) (author.Author, err
 	return ath, nil
 }
 
-func (r *repository) FindAll(ctx context.Context) (a []author.Author, err error) {
+func (r *repository) FindAll(ctx context.Context) ([]author.Author, error) {
 	q := `
 		SELECT id, name
-		FROM public.author
+		FROM author
 	`
 
 	r.logger.Trace(fmt.Sprintf("SQL Query: %s", formatQuery(q)))
