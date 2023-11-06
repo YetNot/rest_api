@@ -8,10 +8,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	author "rest_api/internal/author/db"
 	"rest_api/internal/config"
 	"rest_api/internal/user"
-	"rest_api/internal/user/db"
-	"rest_api/pkg/client/mongodb"
+	"rest_api/pkg/client/postgresql"
 	"rest_api/pkg/logging"
 	"time"
 
@@ -25,25 +25,40 @@ func main() {
 
 	cfg := config.GetConfig()
 
-	cfgMongo := cfg.MongoDB
-	mongoDBClient, err := mongodb.NewClient(context.Background(), cfgMongo.Host, cfgMongo.Port, cfgMongo.Username,
-		cfgMongo.Password, cfgMongo.Database, cfgMongo.AuthDB)
+	postrgeSQLClient, err := postgresql.NewClient(context.TODO(), 5, cfg.Storage)
 	if err != nil {
-		panic(err)
+		logger.Fatal("%v", err)
 	}
-	storage := db.NewStorage(mongoDBClient, cfg.MongoDB.Collection, logger)
+	repository := author.NewRepository(postrgeSQLClient, logger)
 
-	user1 := user.User{
-		ID:           "",
-		Email:        "glinskix24@bk.ru",
-		Username:     "yetnot",
-		PasswordHash: "12345",
-	}
-	user1ID, err := storage.Create(context.Background(), user1)
+	all, err := repository.FindAll(context.TODO())
 	if err != nil {
-		panic(err)
+		logger.Fatal("%v", err)
 	}
-	logger.Info(user1ID)
+
+	for _, ath := range all {
+		logger.Info("%v", ath)
+	}
+
+	// cfgMongo := cfg.MongoDB
+	// mongoDBClient, err := mongodb.NewClient(context.Background(), cfgMongo.Host, cfgMongo.Port, cfgMongo.Username,
+	// 	cfgMongo.Password, cfgMongo.Database, cfgMongo.AuthDB)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// storage := db.NewStorage(mongoDBClient, cfg.MongoDB.Collection, logger)
+
+	// user1 := user.User{
+	// 	ID:           "",
+	// 	Email:        "glinskix24@bk.ru",
+	// 	Username:     "yetnot",
+	// 	PasswordHash: "12345",
+	// }
+	// user1ID, err := storage.Create(context.Background(), user1)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// logger.Info(user1ID)
 
 	logger.Info("register user handler")
 	handler := user.NewHandler(logger)
